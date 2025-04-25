@@ -91,12 +91,15 @@ public class SoundRNG {
     }
 
     private int hash_to_int(byte[] hashed_lsb){
-        int bytes_in_int = 4;
-        byte[] bytes_to_convert = new byte[bytes_in_int];
-        for (int i = 0; i < bytes_in_int; i++) {
-            bytes_to_convert[i] = hashed_lsb[i];
+        int num = 0;
+        for (int i = 0; i < hashed_lsb.length; i += 4) {
+            int chunk = ((hashed_lsb[i] & 0xFF) << 24) |
+                        ((hashed_lsb[i + 1] & 0xFF) << 16) |
+                        ((hashed_lsb[i + 2] & 0xFF) << 8) |
+                        (hashed_lsb[i + 3] & 0xFF);
+            num ^= chunk;
         }
-        return ByteBuffer.wrap(bytes_to_convert).getInt();
+        return num;
     }
 
 
