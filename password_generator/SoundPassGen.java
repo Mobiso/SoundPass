@@ -16,11 +16,11 @@ public class SoundPassGen{
     public enum symbolType{UPPERCASE,LOWERCASE,DIGITS,SPECIAL}
 
 
-    private SoundRNG rng = new SoundRNG("entropysource.bin",8); //For testing
+    private SoundRNG rng;
     //Include RNG
-    public SoundPassGen(){
+    public SoundPassGen(String entropySource, int collected_entropy_per_letter){
         //Create RNG object
-
+        rng = new SoundRNG(entropySource, collected_entropy_per_letter);
         enumSymbolMapping.put(symbolType.UPPERCASE, SYMBOLS_UPPER_CASE);
         enumSymbolMapping.put(symbolType.LOWERCASE, SYMBOLS_LOWER_CASE);
         enumSymbolMapping.put(symbolType.DIGITS, SYMBOLS_DIGITS);
