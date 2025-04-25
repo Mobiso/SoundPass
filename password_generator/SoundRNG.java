@@ -13,6 +13,7 @@ public class SoundRNG {
     final int DEFAULT_LSB_AMOUNT = 4;
     final int BYTES_PER_SAMPLE = 2;
     int entropy_per_int;
+
     public SoundRNG(String entropySourceFile, int entropy_per_int){
         entropySource = new File(entropySourceFile);
         this.entropy_per_int = entropy_per_int;
@@ -30,8 +31,9 @@ public class SoundRNG {
             System.exit(-2);
         }   
     }
-    private byte[] readBytes(int bits){
-        int bytes_to_read = Math.ceilDiv(bits, DEFAULT_LSB_AMOUNT) * BYTES_PER_SAMPLE;
+    private byte[] readBytes(int wanted_entropy_bits){
+        //Calculated how many bytes is needed for wanted entropy_bits_amount
+        int bytes_to_read = Math.ceilDiv(wanted_entropy_bits, DEFAULT_LSB_AMOUNT) * BYTES_PER_SAMPLE; 
         byte[] raw_bytes_from_entropy_source;
         try {
             raw_bytes_from_entropy_source = entropy_source_reader.readNBytes(bytes_to_read);
