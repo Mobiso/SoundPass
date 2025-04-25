@@ -16,7 +16,7 @@ public class SoundPassGen{
     public enum symbolType{UPPERCASE,LOWERCASE,DIGITS,SPECIAL}
 
 
-    private Random rng = new Random(); //For testing
+    private SoundRNG rng = new SoundRNG("entropysource.bin",8); //For testing
     //Include RNG
     public SoundPassGen(){
         //Create RNG object
@@ -65,7 +65,7 @@ public class SoundPassGen{
 
     private StringBuilder fisher_yates(StringBuilder string){
         for (int i = 0; i < string.length()-2; i++) {
-            int j = rng.nextInt(i, string.length()-2); //RNG for testing
+            int j = rng.nextInt(i, string.length()-1);
             char swapped_char = string.charAt(i);
             string.setCharAt(i, string.charAt(j));
             string.setCharAt(j, swapped_char);
