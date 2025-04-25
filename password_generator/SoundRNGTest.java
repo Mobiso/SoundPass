@@ -13,7 +13,7 @@ import java.io.IOException;
 public class SoundRNGTest {
     public static void main(String[] args) {
         if (args.length < 4) {
-            System.err.println("Usage: java SoundRNGTest <entropyFile> <entropyPerInt> <bits> <numRandoms>");
+            System.err.println("Usage: java SoundRNGTest <entropyFile> <entropyPerInt> <max value> <numRandoms>");
             System.exit(1);
         }
 
