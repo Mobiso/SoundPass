@@ -221,12 +221,7 @@ def process_one_permutation(args):
 
             
 def main(a_path, b_path,permutations_amount):
-    #
-    # INCLUDE CRAMERS V
-    # LOOK UP P VALUE FOR PERMUTATION TESTING
-    # CHOOSE A SIGNIFICANCE LEVEL lets go with 0.05
-    # Look up bonferri correction
-
+    #<
     #
     # Chi square tests H0 = There is no association between the letter A in passwordsA and letter B in passwordsB
     # If p <= significance level then reject H0 -> Ha is true (there is an association)
