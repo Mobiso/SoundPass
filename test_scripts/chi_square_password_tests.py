@@ -2,9 +2,11 @@ from scipy.stats import chi2_contingency
 import sys
 import numpy as np
 from numpy import random
+import os
 import tqdm
 from scipy.stats.contingency import association
-import concurrent.futures
+from concurrent.futures import ProcessPoolExecutor
+from tqdm.contrib.concurrent import process_map
 # All sets of symbols
 SYMBOLS_LOWER = "abcdefghijkmnpqrstuvwxyz"
 SYMBOLS_UPPER = "ABCDEFGHJKLMNPQRSTUVWXYZ"
@@ -13,6 +15,7 @@ SYMBOLS_SPECIAL = "-~!@#$%^&*_+=)}:;\"'>,.?]"
 ALPHA = 0.05
 SYMBOLS_IN_USE = ""
 CHAR_MAPPING = {}
+
 
 def read_passwords(filepath):
     """Read and strip passwords (one per line) from a file."""
@@ -43,12 +46,12 @@ def set_active_symbols(password,
     
 
 def build_contingency(symbols_a, symbols_b):
+    symbols_a = ''.join(symbols_a)
+    symbols_b = ''.join(symbols_b)
     matrix = np.zeros((len(SYMBOLS_IN_USE),len(SYMBOLS_IN_USE)),dtype=int)
     for char_index in range(len(symbols_a)):
         matrix[CHAR_MAPPING.get(symbols_a[char_index])][CHAR_MAPPING.get(symbols_b[char_index])] += 1
     return matrix
-
-
 
 
 #
@@ -85,25 +88,22 @@ def run_chi_test(passwordsA, passwordsB, permutations_amount, cross_permutations
     cross_results = run_cross_position_dependencies_chi(
         passwordsA, passwordsB, cross_permutations
     )
-   # right after you compute `cross_results`...
+   # right after you compute cross_results...
 
     # 1) build a header and separator
-    header = f"{'#':>3} | {'PosA':>4} | {'PosB':>4} | {'χ² p-val':>8} | {'crv p-val':>8} | {'Init p':>10} | {'CramersV init':>8}"
-    sep    = "-" * len(header)
+    header = f"{'#':>3} | {'PosA':>4} | {'PosB':>4} | {'Chi2 p-val':>10} | {'crv p-val':>9} | {'Init p':>10} | {'CramersV init':>14} | {'STATUS':>8}"
+    sep = "-" * len(header)
     print(header)
     print(sep)
 
-    # 2) print the top 10 in fixed-width columns
     for rank, (i, j, p_chi, p_crv, p_init, crv_init) in enumerate(cross_results):
-        print(f"{rank:3d} | {i:4d} | {j:4d} | {p_chi:8.4f} | {p_crv:8.4f} | {p_init:10.4f} | {crv_init:8.4f}")
-
-    print()  # blank line after the table
+        # Bonferroni correction
+        status = "PASS" if p_chi > ALPHA / (len(passwordsA[0])**2) else "FAIL"
+        print(f"{rank:3d} | {i:4d} | {j:4d} | {p_chi:10.4f} | {p_crv:9.4f} | {p_init:10.4f} | {crv_init:14.4f} | {status:>8s}")
+        print()  # blank line after the table
 
 def run_global_chi(passwordsA, passwordsB):
-    contingency = build_contingency(
-        ''.join(passwordsA),
-        ''.join(passwordsB),
-    )
+    contingency = build_contingency(passwordsA,passwordsB)
     cramersV = association(contingency, method="cramer")
     chi2, p, dof, expected = chi2_contingency(contingency)
     return cramersV, chi2, p, dof
@@ -119,80 +119,107 @@ def run_permutation_global_chi(passwordsA,passwordsB,permutations_amount, chi_in
     cramersV_statistics = []
     passwordsAString = ''.join(passwordsA)
     passwordsBString = ''.join(passwordsB)
-    #Needs to be a char list to create permutation
-    passwordsBList = list(passwordsBString)
+    
+
+    passwordsB_symbolArray = np.array(list(passwordsBString))
     
     number_of_chi_greater_than_initial = 0
     number_of_cramersV_greater_than_initial = 0
-    for i in tqdm.tqdm(range(permutations_amount), desc="Permutations Progress", unit="perm"):
-        contingency = build_contingency(passwordsAString,random.permutation(passwordsBList))
-        chi2, p, dof, expected = chi2_contingency(contingency)
-        cramersV = association(contingency,method="cramer")
+    
+    #Pre calculate perutations indexes
+    permutations = [np.random.permutation(len(passwordsB_symbolArray)) for _ in tqdm.tqdm(range(permutations_amount), desc="Pre calculating permutations", unit ="perm",leave=False)]
+    jobs = []
+    for i in range(permutations_amount):
+        jobs.append((passwordsA,passwordsB_symbolArray[permutations[i]]))
+
+    results = process_map(
+        process_one_global_permutation,
+        jobs,
+        chunksize=1,
+        max_workers=os.cpu_count(),
+        desc="Permutations tested",
+        unit="perms",
+        leave=False
+    )
+    for cramersV, chi2 in results:
         if chi2 >= chi_initial:
             number_of_chi_greater_than_initial += 1
         if cramersV >= cramersV_initial:
             number_of_cramersV_greater_than_initial += 1
-        
     #Calculate p-value
     p_value_chi = number_of_chi_greater_than_initial/(permutations_amount +1)
     p_value_cramersV = number_of_cramersV_greater_than_initial/(permutations_amount + 1)
     return p_value_chi, p_value_cramersV
 
+def process_one_global_permutation(args):
+    passwordsA,passwordsBPermutaded = args
+    contingency = build_contingency(passwordsA,passwordsBPermutaded)
+    chi2, p, dof, expected = chi2_contingency(contingency)
+    cramersV = association(contingency,method="cramer")
+    return cramersV,chi2
+
 #
 #   Tests if User letter A -> Adversary letter B for every position pair (i,j).
 #   Collects permutations_amounts of Chi2 statistics for every position pair and compare the initial non permutated statistic to the distrobution.
 #
-def run_cross_position_dependencies_chi(passwordsA, passwordsB, permutations):
+def run_cross_position_dependencies_chi(passwordsA, passwordsB, permutations_amount):
   
     passwordLength = len(passwordsA[0])
     results = []
+   
+    perm_indices = [ np.random.permutation(len(passwordsA)) for _ in tqdm.tqdm(range(permutations_amount), desc="Pre calculating permutations indices", unit ="perm",leave=False)]
     # one progress bar for all pairs
-    outer = tqdm.tqdm(total=passwordLength**2, desc="Position pairs", unit="pair")
-    
-    for i in range(passwordLength):
-        colA = [pw[i] for pw in passwordsA]
-        for j in range(passwordLength):
-            colB_list = [pw[j] for pw in passwordsB]
-            # initial (non-permuted) stats
-            contingency = build_contingency(colA, colB_list)
-            chi_initial, p_initial, _, _ = chi2_contingency(contingency)
-            cramersV_initial = association(contingency, method="cramer")
-            
-            
-            number_of_chi_greater_than_initial = 0
-            number_of_cramersV_greater_than_initial = 0
-            
-            # permute and count
-            inner = tqdm.tqdm(total=permutations, desc=f"Perm Pos ({i},{j})", unit="perm", leave=False)
-            for _ in range(permutations):
-                permuted_B = np.random.permutation(colB_list)
-                cont = build_contingency(colA, permuted_B)
-                chi, _, _, _ = chi2_contingency(cont)
-                crv = association(cont)
-                
-                if chi >= chi_initial:
-                    number_of_chi_greater_than_initial += 1
-                if crv >= cramersV_initial:
-                   number_of_cramersV_greater_than_initial += 1
-                
-                inner.update(1)
-            inner.close()
-            
-            # compute p-values exactly as in the global test
-            p_val_chi = number_of_chi_greater_than_initial / (permutations + 1)
-            p_val_cramer = number_of_cramersV_greater_than_initial/ (permutations + 1)
-            
-            results.append((i, j, p_val_chi, p_val_cramer, p_initial, cramersV_initial))
-            outer.update(1)
-    
-    outer.close()
+    pair_progress_bar = tqdm.tqdm(total = (len(passwordsA[0])*len(passwordsA[0])),desc="Pairs completed",unit="pairs",leave=False)
+    for i in range(len(passwordsA[0])):
+        for j in range(len(passwordsA[0])):
+            colA = [pw[i] for pw in passwordsA]
+            colB = np.array([pw[j] for pw in passwordsB])
+            results.append(process_one_pair((i, j, colA, colB, perm_indices)))
+            pair_progress_bar.update(1) 
+
     # sort descending by p_val_chi
     return sorted(results, key=lambda x: x[2], reverse=True)
+#Change so it uses multicores for 1 pair by giving jobs one perm indice each
+def process_one_pair(args):
+    i, j, colA, colB, perm_indices = args
+    contingency = build_contingency(colA, colB)
+    chi_initial, p_initial, _, _ = chi2_contingency(contingency)
+    cramersV_initial = association(contingency, method="cramer")
+      
+    number_of_chi_greater_than_initial = 0
+    number_of_cramersV_greater_than_initial = 0
+    jobs = []
 
-  
+    for perm in perm_indices:
+        jobs.append((colA,colB[perm]))
+        
+    results = process_map(
+        process_one_permutation,
+        jobs,
+        chunksize=1,
+        max_workers=os.cpu_count(),
+        desc=f"Permutations tested for pos ({i},{j})",
+        unit="perms",
+        leave = False
+    )
+    for chi,cramersV in results:
+        if chi >= chi_initial:
+            number_of_chi_greater_than_initial += 1
+        if cramersV >= cramersV_initial:
+            number_of_cramersV_greater_than_initial += 1
+   
+    
+    p_val_chi = number_of_chi_greater_than_initial / (len(perm_indices) + 1)
+    p_val_cramer = number_of_cramersV_greater_than_initial/ (len(perm_indices) + 1)
+    return (i, j, p_val_chi, p_val_cramer, p_initial, cramersV_initial)
+def process_one_permutation(args):
+    colA,permutedColB = args
+    contingency = build_contingency(colA,permutedColB)
+    chi,_, _, _ = chi2_contingency(contingency)
+    cramersV = association(contingency,method="cramer")
+    return chi,cramersV
 
-
-
+            
 def main(a_path, b_path,permutations_amount):
     #
     # INCLUDE CRAMERS V
@@ -201,7 +228,7 @@ def main(a_path, b_path,permutations_amount):
     # Look up bonferri correction
 
     #
-    # Chi square tests H0 = There is no association between the letter A in passwordsA results in letter B in passwordsB
+    # Chi square tests H0 = There is no association between the letter A in passwordsA and letter B in passwordsB
     # If p <= significance level then reject H0 -> Ha is true (there is an association)
     #
     # Permutations tests H0 = Associations are the same as if it was random
@@ -218,6 +245,8 @@ def main(a_path, b_path,permutations_amount):
 
     #Detect which symbols in use based on first password
     set_active_symbols(pwA[0])
+    print(f"Using symbols: {SYMBOLS_IN_USE}")
+    print()
     run_chi_test(pwA,pwB,permutations_amount)
 
 
