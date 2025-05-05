@@ -3,6 +3,7 @@ import wave
 import time
 import os
 import numpy as np
+import sys
 from tqdm import tqdm
 
 SAMPLES_TO_DISCARD = 10_000
@@ -15,7 +16,7 @@ RESTART_SAMPLES = 1000
 TOTAL_RESTART_SAMPLES = RESTART_SAMPLES + SAMPLES_TO_DISCARD
 RESTARTS = 1000
 BYTES_PER_SAMPLE = 2
-MAX_LSB = 4
+
 
 #Create directory
 location_name = input("Please enter recording location name: ")
@@ -42,6 +43,10 @@ for device in range(devices):
 
 recording_device = int(input("Please select a recording device: "))
 print("--------------------------------------------------------------")
+lsb_amount = int(input("Please enter lsb amount to capture 1-8"))
+if lsb_amount > 8 or lsb_amount <= 0:
+    print("Wrong amount of lsbs. Enter 1-8")
+    sys.exit()
 time.sleep(4)
 print("Starting to record")
 #Open stream
@@ -53,18 +58,19 @@ stream = p.open(format=FORMAT,
                 input_device_index=recording_device)
 #Record
 raw_audio_bytes = stream.read(TOTAL_INITIAL_ENTROPY_SAMPLES)
+    
 print("Finished recording")
 print("Closing stream...")
 stream.close()
 audio_entropy_bytes = []
 #Extract the 8 lsb from each sample
 audio_entropy_bytes = raw_audio_bytes[SAMPLES_TO_DISCARD * BYTES_PER_SAMPLE::2]
-#Extract lsb 1-4 by masking
-lsb_mask = 0xF
-for lsb_amount in range(MAX_LSB):
+#Extract lsb by masking
+lsb_mask = (1 << lsb_amount) - 1
+for i in range(lsb_amount):
     masked_entropy_bytes = bytes([byte & lsb_mask for byte in audio_entropy_bytes])
     #Print file
-    file_path = f"{location_name}/{location_name}_{MAX_LSB - lsb_amount}_INITIAL.bin"
+    file_path = f"{location_name}/{location_name}_{lsb_amount - i}_INITIAL.bin"
     with open(file_path,"wb") as file:
         file.write(masked_entropy_bytes)
     lsb_mask = lsb_mask >> 1
@@ -102,12 +108,12 @@ match restart_answer:
                 row_dataset.append(restart_matrix[i][j])
 
         #Print row dataset files
-        #Extract lsb 1-4 by masking
-        lsb_mask = 0xF
-        for lsb_amount in range(MAX_LSB):
+        #Extract lsb by masking
+        lsb_mask = (1 << lsb_amount) - 1
+        for i in range(lsb_amount):
             masked_rowdataset = bytes([byte & lsb_mask for byte in row_dataset])
             #Print file
-            file_path = f"{location_name}/{location_name}_{MAX_LSB - lsb_amount}_RESTART.bin"
+            file_path = f"{location_name}/{location_name}_{lsb_amount - i}_RESTART.bin"
             with open(file_path,"wb") as file:
                 file.write(masked_rowdataset)
             lsb_mask = lsb_mask >> 1
