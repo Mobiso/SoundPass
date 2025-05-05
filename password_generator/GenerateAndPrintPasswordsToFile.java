@@ -1,5 +1,4 @@
-import java.io.File;
-import java.io.FileOutputStream;
+
 import java.util.EnumSet;
 import java.io.PrintWriter;
 /*
@@ -12,14 +11,14 @@ public class GenerateAndPrintPasswordsToFile {
         
         EnumSet<SoundPassGen.symbolType> requiredTypes = EnumSet.allOf(SoundPassGen.symbolType.class);
         
-        //Hard coded for now
-        int numPasswords = 10_000;
-        int passwordLength = 10;
-        int entropy_per_letter = 16;
-        String entropySource =  "entropysource.bin";
-        String outputname = "passwords.txt";
+        
+        int numPasswords = Integer.parseInt(args[0]);
+        int passwordLength = Integer.parseInt(args[1]);
+        int entropy_per_int = Integer.parseInt(args[2]);
+        String entropySource =  args[3];
+        String outputname = entropySource + "_passwords.txt";
 
-        SoundPassGen generator = new SoundPassGen(entropySource,entropy_per_letter);
+        SoundPassGen generator = new SoundPassGen(entropySource,entropy_per_int);
         PrintWriter passwordWriter;
         try {
            passwordWriter = new PrintWriter(outputname);
