@@ -15,6 +15,7 @@ public class SoundPassGen{
 
     public enum symbolType{UPPERCASE,LOWERCASE,DIGITS,SPECIAL}
 
+    private boolean skip_shuffle = false;
 
     private SoundRNG rng;
     //Include RNG
@@ -25,6 +26,15 @@ public class SoundPassGen{
         enumSymbolMapping.put(symbolType.LOWERCASE, SYMBOLS_LOWER_CASE);
         enumSymbolMapping.put(symbolType.DIGITS, SYMBOLS_DIGITS);
         enumSymbolMapping.put(symbolType.SPECIAL, SYMBOLS_SPECIAL);
+    }
+    public SoundPassGen(String entropySource, int collected_entropy_per_letter, boolean skip_shuffle){
+        //Create RNG object
+        rng = new SoundRNG(entropySource, collected_entropy_per_letter);
+        enumSymbolMapping.put(symbolType.UPPERCASE, SYMBOLS_UPPER_CASE);
+        enumSymbolMapping.put(symbolType.LOWERCASE, SYMBOLS_LOWER_CASE);
+        enumSymbolMapping.put(symbolType.DIGITS, SYMBOLS_DIGITS);
+        enumSymbolMapping.put(symbolType.SPECIAL, SYMBOLS_SPECIAL);
+        this.skip_shuffle = skip_shuffle;
     }
 
     public String generatePassword(int length,EnumSet<symbolType> required){
@@ -37,7 +47,7 @@ public class SoundPassGen{
         //Shuffle since required are always first
         password = fisher_yates(password);
         int current_shuffles = 0;
-        while (exceeds_max_consecutive(password) && current_shuffles <= MAX_SHUFFLES) {
+        while (!skip_shuffle && exceeds_max_consecutive(password) && current_shuffles <= MAX_SHUFFLES) {
             password = fisher_yates(password);
             current_shuffles++;
         }
