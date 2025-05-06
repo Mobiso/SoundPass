@@ -45,7 +45,7 @@ def main(a_path, b_path,chunk_size):
         d = hamming_bytes(A_chunks[chunk], B_chunks[chunk])
         hamming_distro[d] = hamming_distro.get(d,0) + 1
 
-    with open('hamming_distribution.csv', mode='w', newline='') as file:
+    with open('hamming_distribution_input_rng.csv', mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['Hamming Distance', 'Count'])  # header row
         for distance, count in sorted(hamming_distro.items()):

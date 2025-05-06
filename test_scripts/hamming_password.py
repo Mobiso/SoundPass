@@ -27,7 +27,7 @@ def main(a_path, b_path,password_length):
         d = hamming(A[password_index], B[password_index])
         hamming_distro[d] = hamming_distro.get(d,0) + 1
 
-    with open('hamming_distribution.csv', mode='w', newline='') as file:
+    with open('hamming_distribution_passwords.csv', mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['Hamming Distance', 'Count'])  # header row
         for distance, count in sorted(hamming_distro.items()):
