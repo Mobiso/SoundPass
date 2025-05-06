@@ -54,6 +54,6 @@ def main(a_path, b_path,chunk_size):
 if __name__ == "__main__":
     
     if len(sys.argv) != 4:
-        print("Usage: python script.py <passwordsA.txt> <passwordsB.txt> <chunk size(bytes)>")
+        print("Usage: python script.py <inputA.bin> <inputB.bin> <chunk size(bytes)>")
         sys.exit(1)
     main(sys.argv[1], sys.argv[2],int(sys.argv[3]))
