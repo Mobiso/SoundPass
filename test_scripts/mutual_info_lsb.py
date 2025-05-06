@@ -17,15 +17,14 @@ def main(a_path, b_path,byte_amount,lsb_amount,permutations):
     b_lsbs = b_arr & mask     # dtype stays uint8
     initial_score = calc_mutual_info(a_lsbs,b_lsbs)
     scores_greater_than_initial = 0
-    perm_indices = [np.random.permutation(len(a_lsbs)) for _ in tqdm.tqdm(range(permutations), desc="Pre calculating permutations", unit ="perm",leave=False)]
-    for perm in tqdm.tqdm(perm_indices, desc="Test permutations",unit ="perm",leave=False):
-        score = calc_mutual_info(a_lsbs,b_lsbs[perm])
+    for perm in tqdm.tqdm(range(permutations), desc="Testing permutations",unit ="perm",leave=False):
+        score = calc_mutual_info(a_lsbs,np.random.permutation(b_lsbs))
         if score >= initial_score:
             scores_greater_than_initial += 1
     p_value = scores_greater_than_initial/(permutations + 1)
     print(f"Initial score = {initial_score}")
     print(f"p-value: {p_value}")
-    print(f"A p-value greater than {ALPHA} means there is no difference from random permutations")
+    print(f"A p-value greater than {ALPHA} means there is no difference from random {permutations} permutations")
 
 def calc_mutual_info(a,b):
     return mutual_info_score(a,b)
