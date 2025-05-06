@@ -18,7 +18,7 @@ public class GenerateAndPrintPasswordsToFile {
         String entropySource =  args[3];
         String outputname = entropySource + "_passwords.txt";
 
-        SoundPassGen generator = new SoundPassGen(entropySource,entropy_per_int);
+        SoundPassGen generator = new SoundPassGen(entropySource,entropy_per_int,true);
         PrintWriter passwordWriter;
         try {
            passwordWriter = new PrintWriter(outputname);
