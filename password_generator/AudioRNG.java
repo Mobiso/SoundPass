@@ -643,7 +643,7 @@ public class AudioRNG {
         String baseName = entropySource.getName().replaceAll("\\..+$", "");
 
          // Create the directory where the files will be saved
-        String directoryPath = "NIST-files-" + baseName + "-" + bitsPerSequence + "-bits";
+        String directoryPath = "NIST-files-" + baseName + "-" + bitsToExtract + "-bits";
         File directory = new File(directoryPath);
         if (!directory.exists()) {
             directory.mkdirs();  // Create the directory if it does not exist
