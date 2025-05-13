@@ -5,7 +5,7 @@ import pyaudio
 import wave
 
 
-SAMPLES_TO_DISCARD = 10_000
+SAMPLES_TO_DISCARD = 20_000
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
