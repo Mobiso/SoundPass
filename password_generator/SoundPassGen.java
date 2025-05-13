@@ -1,6 +1,6 @@
 import java.util.EnumSet;
 import java.util.Random; //For testing
-
+import java.io.IOException;
 import java.util.EnumMap;
 public class SoundPassGen{
     
@@ -17,19 +17,20 @@ public class SoundPassGen{
 
     private boolean skip_shuffle = false;
 
-    private SoundRNG rng;
+    private AudioRNG rng;
     //Include RNG
-    public SoundPassGen(String entropySource, int collected_entropy_per_letter){
+    public SoundPassGen(String entropySource, int collected_entropy_per_letter) throws Exception{
         //Create RNG object
-        rng = new SoundRNG(entropySource, collected_entropy_per_letter);
+        rng = new AudioRNG(entropySource, collected_entropy_per_letter);
+        
         enumSymbolMapping.put(symbolType.UPPERCASE, SYMBOLS_UPPER_CASE);
         enumSymbolMapping.put(symbolType.LOWERCASE, SYMBOLS_LOWER_CASE);
         enumSymbolMapping.put(symbolType.DIGITS, SYMBOLS_DIGITS);
         enumSymbolMapping.put(symbolType.SPECIAL, SYMBOLS_SPECIAL);
     }
-    public SoundPassGen(String entropySource, int collected_entropy_per_letter, boolean skip_shuffle){
+    public SoundPassGen(String entropySource, int collected_entropy_per_letter, boolean skip_shuffle, int lsbs_per_sample) throws Exception{
         //Create RNG object
-        rng = new SoundRNG(entropySource, collected_entropy_per_letter);
+        rng = new AudioRNG(entropySource, collected_entropy_per_letter,lsbs_per_sample);
         enumSymbolMapping.put(symbolType.UPPERCASE, SYMBOLS_UPPER_CASE);
         enumSymbolMapping.put(symbolType.LOWERCASE, SYMBOLS_LOWER_CASE);
         enumSymbolMapping.put(symbolType.DIGITS, SYMBOLS_DIGITS);

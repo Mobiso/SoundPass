@@ -9,18 +9,38 @@ import java.io.PrintWriter;
 public class GenerateAndPrintPasswordsToFile {
     public static void main(String[] args) {
         
+        if(args.length != 5){
+            System.out.println("Usage: <num passwords> <password length> <entropy per int> <lsbs per sample>");
+            System.exit(-1);
+        }
         EnumSet<SoundPassGen.symbolType> requiredTypes = EnumSet.allOf(SoundPassGen.symbolType.class);
         
-        
-        int numPasswords = Integer.parseInt(args[0]);
-        int passwordLength = Integer.parseInt(args[1]);
-        int entropy_per_int = Integer.parseInt(args[2]);
-        String entropySource =  args[3];
-        String outputname = entropySource + "_passwords.txt";
 
-        SoundPassGen generator = new SoundPassGen(entropySource,entropy_per_int,true);
+        int numPasswords = 0;
+        int passwordLength = 0;
+        int entropy_per_int = 0;
+        int lsbs_per_sample = 0;
+        String entropySource = "";
+        String outputname = "";
+        try {
+            numPasswords = Integer.parseInt(args[0]);
+            passwordLength = Integer.parseInt(args[1]);
+            entropy_per_int = Integer.parseInt(args[2]);
+            lsbs_per_sample = Integer.parseInt(args[3]);
+            entropySource =  args[4];
+            outputname = entropySource + "_passwords.txt";
+    
+        } catch (Exception e) {
+            // TODO: handle exception
+            System.out.println("Wrong Arguments. " + e.toString());
+            System.exit(-2);
+        }
+       
+
+        SoundPassGen generator;
         PrintWriter passwordWriter;
         try {
+           generator = new SoundPassGen(entropySource,entropy_per_int,true,lsbs_per_sample);
            passwordWriter = new PrintWriter(outputname);
            for (int i = 0; i < numPasswords; i++) {
                 String current_password = generator.generatePassword(passwordLength, requiredTypes);
@@ -32,7 +52,7 @@ public class GenerateAndPrintPasswordsToFile {
             // TODO: handle exception
             e.printStackTrace();
             System.out.println("Something went wong");
-            System.exit(-1);
+            System.exit(-3);
         }
        
 
