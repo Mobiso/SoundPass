@@ -194,7 +194,7 @@ public class AudioRNG {
         int mask = (1 << lsbAmount) - 1;
     
         for (int i = 0; i + 1 < samples.length && bitIndex < bitsNeeded; i += 2) {
-            int sample = ((samples[i] & 0xFF) << 8) | (samples[i + 1] & 0xFF);
+            int sample = (samples[i] & 0xFF) | ((samples[i + 1] & 0xFF) << 8);
             int lsb = sample & mask;
     
             for (int b = lsbAmount - 1; b >= 0 && bitIndex < bitsNeeded; b--, bitIndex++) {
