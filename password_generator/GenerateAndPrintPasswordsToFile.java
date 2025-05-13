@@ -10,7 +10,7 @@ public class GenerateAndPrintPasswordsToFile {
     public static void main(String[] args) {
         
         if(args.length != 5){
-            System.out.println("Usage: <num passwords> <password length> <entropy per int> <lsbs per sample>");
+            System.out.println("Usage: <num passwords> <password length> <lsbs per sample> <entropy per int> ");
             System.exit(-1);
         }
         EnumSet<SoundPassGen.symbolType> requiredTypes = EnumSet.allOf(SoundPassGen.symbolType.class);
