@@ -1,0 +1,96 @@
+For (4_1):
+shortest dist: (5, 1)
+For (8_1):
+shortest dist: (7, 5)
+For (16_1):
+shortest dist: (7, 1)
+For (32_1):
+shortest dist: (7, 4)
+For (64_1):
+shortest dist: (7, 2)
+For (128_1):
+shortest dist: (6, 1)
+For (4_2):
+shortest dist: (6, 6)
+For (8_2):
+shortest dist: (6, 1)
+For (16_2):
+shortest dist: (7, 3)
+For (32_2):
+shortest dist: (7, 2)
+For (64_2):
+shortest dist: (7, 2)
+For (128_2):
+shortest dist: (7, 2)
+For (4_3):
+shortest dist: (6, 8)
+For (8_3):
+shortest dist: (7, 5)
+For (16_3):
+shortest dist: (7, 1)
+For (32_3):
+shortest dist: (6, 1)
+For (64_3):
+shortest dist: (7, 2)
+For (128_3):
+shortest dist: (7, 4)
+For (4_4):
+shortest dist: (6, 10)
+For (8_4):
+shortest dist: (7, 2)
+For (16_4):
+shortest dist: (7, 4)
+For (32_4):
+shortest dist: (7, 2)
+For (64_4):
+shortest dist: (7, 1)
+For (128_4):
+shortest dist: (7, 4)
+For (4_5):
+shortest dist: (6, 8)
+For (8_5):
+shortest dist: (7, 4)
+For (16_5):
+shortest dist: (6, 1)
+For (32_5):
+shortest dist: (7, 2)
+For (64_5):
+shortest dist: (8, 66)
+For (128_5):
+shortest dist: (7, 4)
+For (4_6):
+shortest dist: (6, 12)
+For (8_6):
+shortest dist: (6, 1)
+For (16_6):
+shortest dist: (6, 1)
+For (32_6):
+shortest dist: (7, 1)
+For (64_6):
+shortest dist: (7, 1)
+For (128_6):
+shortest dist: (7, 3)
+For (4_7):
+shortest dist: (5, 1)
+For (8_7):
+shortest dist: (7, 2)
+For (16_7):
+shortest dist: (7, 3)
+For (32_7):
+shortest dist: (7, 1)
+For (64_7):
+shortest dist: (6, 1)
+For (128_7):
+shortest dist: (8, 80)
+For (4_8):
+shortest dist: (6, 5)
+For (8_8):
+shortest dist: (7, 6)
+For (16_8):
+shortest dist: (7, 1)
+For (32_8):
+shortest dist: (7, 4)
+For (64_8):
+shortest dist: (6, 1)
+For (128_8):
+shortest dist: (7, 3)
