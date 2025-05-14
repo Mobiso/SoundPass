@@ -405,7 +405,7 @@ public class AudioRNG {
 
     public void writeNISTHashedBinaryFile(int bitsPerSequence, int sequences) {
         String baseName = entropySource.getName().replaceAll("\\..+$", "");
-        String filename = baseName + "-" + bitsToExtract + "/" + lsbAmount + "-bits/lsbs" + "-NIST-hashed.bin";
+        String filename = baseName + "-" + bitsToExtract + "/" + lsbAmount + "-bits/lsbs" + "-hashed-NIST.bin";
 
         File file = new File(filename);
         file.getParentFile().mkdirs();
@@ -429,7 +429,7 @@ public class AudioRNG {
 
     public void writeNISTHashedBinaryFileUntilEOF(int bitsPerSequence) {
         String baseName = entropySource.getName().replaceAll("\\..+$", "");
-        String filename = baseName + "-" + bitsToExtract + "/" + lsbAmount + "-bits/lsbs" + "-NIST-hashed-UNTIL-EOF.bin";
+        String filename = baseName + "-" + bitsToExtract + "/" + lsbAmount + "-bits/lsbs" + "-hashed-NIST-UNTIL-EOF.bin";
 
         File file = new File(filename);
         file.getParentFile().mkdirs(); // Ensure directory structure exists
@@ -453,7 +453,7 @@ public class AudioRNG {
 
         public void writeNISTSecureBinaryFile(int bitsPerSequence, int sequences) {
         String baseName = entropySource.getName().replaceAll("\\..+$", "");
-        String filename = baseName + "-" + bitsToExtract + "/" + lsbAmount + "-bits/lsbs" + "-NIST-secure.bin";
+        String filename = baseName + "-" + bitsToExtract + "/" + lsbAmount + "-bits/lsbs" + "-secure-NIST.bin";
 
         File file = new File(filename);
         file.getParentFile().mkdirs();
@@ -477,7 +477,7 @@ public class AudioRNG {
 
     public void writeNISTSecureBinaryFileUntilEOF(int bitsPerSequence) {
         String baseName = entropySource.getName().replaceAll("\\..+$", "");
-        String filename = baseName + "-" + bitsToExtract + "/" + lsbAmount + "-bits/lsbs" + "-NIST-secure-UNTIL-EOF.bin";
+        String filename = baseName + "-" + bitsToExtract + "/" + lsbAmount + "-bits/lsbs" + "-secure-NIST-UNTIL-EOF.bin";
 
         File file = new File(filename);
         file.getParentFile().mkdirs(); // Ensure directory structure exists
