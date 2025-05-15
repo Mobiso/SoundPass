@@ -45,7 +45,7 @@ public class AudioRNG {
 
     public void setSeed(String newEntropySourcePath) throws IOException {
         File newFile = new File(newEntropySourcePath);
-        if (!newFile.exists() || !newFile.isFile() || !entropySource.canRead()) {
+        if (!newFile.exists() || !newFile.isFile() || !newFile.canRead()) {
             throw new FileNotFoundException("Invalid entropy source file: " + newEntropySourcePath);
         }
         this.entropySource = newFile;
@@ -58,6 +58,15 @@ public class AudioRNG {
             entropyReader.close();
         }
     }
+
+    public void resetEntropyReader() {
+    try {
+        entropyReader.close();
+        entropyReader = new FileInputStream(entropySource);
+    } catch (IOException e) {
+        throw new RuntimeException("Failed to reset entropy reader", e);
+    }
+}
 
     public int getLsbAmount() {
         return lsbAmount;
@@ -81,14 +90,14 @@ public class AudioRNG {
         this.bitsToExtract = bitsToExtract;
     }
 
-    private byte[] extractEntropyBits(int bitsNeeded) {
+    private byte[] extractEntropyBits(int bitsNeeded) throws EOFException {
         int samplesNeeded = (bitsNeeded + lsbAmount - 1) / lsbAmount;
         int bytesNeeded = samplesNeeded * BYTES_PER_SAMPLE;
         byte[] sampleBytes = readAudioBytesOnce(bytesNeeded);
         return extractLSBbits(sampleBytes, bitsNeeded);
     }
 
-    private byte[] readAudioBytesOnce(int bytesNeeded) {
+    private byte[] readAudioBytesOnce(int bytesNeeded) throws EOFException {
         byte[] buffer = new byte[bytesNeeded];
         int bytesRead = 0;
 
@@ -102,7 +111,9 @@ public class AudioRNG {
             }
             return buffer;
 
-        } catch (IOException e) {
+        } catch (EOFException eof) {
+            throw eof; 
+        }catch (IOException e) {
             throw new RuntimeException("Failed to read entropy source: " + e.getMessage(), e);
         }
     }
@@ -148,14 +159,14 @@ public class AudioRNG {
         return result;
     }
 
-    public int nextInt() {
+    public int nextInt() throws EOFException {
         byte[] rawEntropy = extractEntropyBits(bitsToExtract);
         byte[] hashedEntropy = hashBits(rawEntropy);
         int randomValue = hashToInt(hashedEntropy);
         return randomValue;
     }
 
-    public int nextInt(int exclusiveUpperLimit) {
+    public int nextInt(int exclusiveUpperLimit) throws EOFException {
         if (exclusiveUpperLimit <= 0) {
             throw new IllegalArgumentException("Upper limit must be > 0.");
         }
@@ -175,7 +186,7 @@ public class AudioRNG {
         return mod;
     }
 
-    public int nextInt(int inclusiveLowerLimit, int exclusiveUpperLimit) {
+    public int nextInt(int inclusiveLowerLimit, int exclusiveUpperLimit) throws EOFException {
         if (inclusiveLowerLimit >= exclusiveUpperLimit) {
             throw new IllegalArgumentException("Lower limit must be less than upper limit.");
         }
@@ -184,7 +195,7 @@ public class AudioRNG {
         return inclusiveLowerLimit + nextInt(range);
     }
 
-    public byte[] nextBytes(byte[] bytes) {
+    public byte[] nextBytes(byte[] bytes) throws EOFException {
         if (bytes == null) {
             throw new NullPointerException("The byte array provided is null");
         }
@@ -206,13 +217,13 @@ public class AudioRNG {
         return bytes; // Return the filled byte array
     }
 
-    public byte[] nextBytes(int numBits) {
+    public byte[] nextBytes(int numBits) throws EOFException {
         int numBytes = (numBits + 7) / 8;
         byte[] bytes = new byte[numBytes];
         return nextBytes(bytes);
     }
 
-    public byte[] nextHashedBytes(byte[] bytes) {
+    public byte[] nextHashedBytes(byte[] bytes) throws EOFException {
         if (bytes == null) {
             throw new NullPointerException("The byte array provided is null");
         }
@@ -237,14 +248,14 @@ public class AudioRNG {
         return bytes; // Return the filled byte array
     }
 
-    public byte[] nextHashedBytes(int numBits) {
+    public byte[] nextHashedBytes(int numBits) throws EOFException {
         int numBytes = (numBits + 7) / 8;
         byte[] bytes = new byte[numBytes];
         bytes = nextHashedBytes(bytes);
         return bytes;
     }
 
-    public byte[] nextRawBytes(byte[] bytes) {
+    public byte[] nextRawBytes(byte[] bytes) throws EOFException {
         if (bytes == null) {
             throw new NullPointerException("The byte array provided is null");
         }
@@ -266,7 +277,7 @@ public class AudioRNG {
         return bytes; // Return the filled byte array
     }
 
-    public byte[] nextRawBytes(int numBits) {
+    public byte[] nextRawBytes(int numBits) throws EOFException {
         int numBytes = (numBits + 7) / 8;
         byte[] bytes = new byte[numBytes];
         bytes = nextRawBytes(bytes);
@@ -287,14 +298,14 @@ public class AudioRNG {
         return result;
     }
 
-    public int secureNextInt() {
+    public int secureNextInt() throws EOFException {
         byte[] rawEntropy = extractEntropyBits(bitsToExtract);
         byte[] hashedEntropy = hashBits(rawEntropy);
         int randomValue = hashToIntMixed(hashedEntropy);
         return randomValue;
     }
 
-    public int secureNextInt(int exclusiveUpperLimit) {
+    public int secureNextInt(int exclusiveUpperLimit) throws EOFException {
         if (exclusiveUpperLimit <= 0) {
             throw new IllegalArgumentException("Upper limit must be > 0.");
         }
@@ -314,7 +325,7 @@ public class AudioRNG {
         return mod;
     }
 
-    public int secureNextInt(int inclusiveLowerLimit, int exclusiveUpperLimit) {
+    public int secureNextInt(int inclusiveLowerLimit, int exclusiveUpperLimit) throws EOFException {
         if (inclusiveLowerLimit >= exclusiveUpperLimit) {
             throw new IllegalArgumentException("Lower limit must be less than upper limit.");
         }
@@ -323,7 +334,7 @@ public class AudioRNG {
         return inclusiveLowerLimit + secureNextInt(range);
     }
 
-    public byte[] secureNextBytes(byte[] bytes) {
+    public byte[] secureNextBytes(byte[] bytes) throws EOFException {
         if (bytes == null) {
             throw new NullPointerException("The byte array provided is null");
         }
@@ -345,7 +356,7 @@ public class AudioRNG {
         return bytes; // Return the filled byte array
     }
 
-    public byte[] secureNextBytes(int numBits) {
+    public byte[] secureNextBytes(int numBits) throws EOFException {
         int numBytes = (numBits + 7) / 8;
         byte[] bytes = new byte[numBytes];
         bytes = secureNextBytes(bytes);
@@ -366,7 +377,7 @@ public class AudioRNG {
         try (OutputStream out = new BufferedOutputStream(new FileOutputStream(filename))) {
             while (count < sequences) {
                 try {
-                    byte[] bytes = nextBytes(bitsPerSequence); 
+                    byte[] bytes = nextBytes(bitsPerSequence); // Secure version of nextBytes
                     out.write(bytes);
                     count++;
                 } catch (EOFException eof) {
@@ -390,7 +401,7 @@ public class AudioRNG {
         try (OutputStream out = new BufferedOutputStream(new FileOutputStream(filename))) {
             while (true) {
                 try {
-                    byte[] bytes = nextBytes(bitsPerSequence); 
+                    byte[] bytes = nextBytes(bitsPerSequence); // Secure version of nextBytes
                     out.write(bytes);
                     count++;
                 } catch (EOFException eof) {
@@ -438,7 +449,7 @@ public class AudioRNG {
         try (OutputStream out = new BufferedOutputStream(new FileOutputStream(filename))) {
             while (true) {
                 try {
-                    byte[] bytes = nextHashedBytes(bitsPerSequence); 
+                    byte[] bytes = nextHashedBytes(bitsPerSequence); // Secure version of nextBytes
                     out.write(bytes);
                     count++;
                 } catch (EOFException eof) {
@@ -486,7 +497,7 @@ public class AudioRNG {
         try (OutputStream out = new BufferedOutputStream(new FileOutputStream(filename))) {
             while (true) {
                 try {
-                    byte[] bytes = secureNextBytes(bitsPerSequence); 
+                    byte[] bytes = secureNextBytes(bitsPerSequence); // Secure version of nextBytes
                     out.write(bytes);
                     count++;
                 } catch (EOFException eof) {
@@ -498,5 +509,5 @@ public class AudioRNG {
             throw new RuntimeException("Failed to write " + filename, e);
         }
     }
-    
+
 }
