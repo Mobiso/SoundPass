@@ -1,0 +1,3 @@
+Global results:
+	Initial MI: 0.01394701222104172
+	P-value permutation test: 0.0	FAIL
