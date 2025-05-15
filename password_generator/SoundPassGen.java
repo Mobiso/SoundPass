@@ -38,7 +38,7 @@ public class SoundPassGen{
         this.skip_shuffle = skip_shuffle;
     }
 
-    public String generatePassword(int length,EnumSet<symbolType> required){
+    public String generatePassword(int length,EnumSet<symbolType> required) throws EOFException{
         StringBuilder password = new StringBuilder();
         password.append(pick_random_required(required));
         String allowed_symbols = build_allowed_symbols_string(required);
@@ -55,7 +55,7 @@ public class SoundPassGen{
         return password.toString();
     }
 
-    private StringBuilder pick_random_required(EnumSet<symbolType> required){
+    private StringBuilder pick_random_required(EnumSet<symbolType> required) throws EOFException{
         StringBuilder randomly_picked_required_symbols = new StringBuilder();
         for (symbolType t : required) {
             String symbols = enumSymbolMapping.get(t);
@@ -74,7 +74,7 @@ public class SoundPassGen{
         return allowed_symbols.toString();
     }
 
-    private StringBuilder fisher_yates(StringBuilder string){
+    private StringBuilder fisher_yates(StringBuilder string) throws EOFException{
         for (int i = 0; i < string.length()-2; i++) {
             int j = rng.nextInt(i, string.length()-1);
             char swapped_char = string.charAt(i);
